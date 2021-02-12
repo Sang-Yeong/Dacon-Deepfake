@@ -1,0 +1,1 @@
+Tue Nov  3 15:03:56 2020 Fold 0, Epoch 1, lr: 0.0000300, train loss: 0.44058, valid loss: 0.62734, Acc: 52.5688, AUC: 0.905952.

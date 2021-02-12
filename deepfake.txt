@@ -1,0 +1,132 @@
+data.numpy()[0,0,:,:]
+
+adversarial_images.cpu().numpy()[0,0,:,:]
+
+방어 x
+train loss: 0.04294, valid loss: 1.63168, Acc: 66.3171, AUC: 0.713781.
+
+방어 pgd
+            # epss = [1, 2, 4]
+            # alphas = [1, 2]
+train loss: 0.01375, valid loss: 2253.80151, Acc: 63.1463, AUC: 0.467915.
+
+
+#PGD, APGD 30, 80, 120      
+#MIFGSM, TPGD 3, 8, 20
+#RFGSM 16, 30, 50
+#FGSM 2,8,16
+FFGSM  epss = [8, 20, 40]	alphas = [10]
+BIM   epss = [4, 30, 60] 	alphas = [1]
+
+CW
+def __init__(self, model, c=1e-4, kappa=0, steps=1000, lr=0.01):
+
+<APGD>
+def __init__(self, model, eps=0.3, alpha=2/255, steps=40, sampling=10):
+
+<BIM>
+def __init__(self, model, eps=4/255, alpha=1/255, steps=0):
+
+<CW>
+def __init__(self, model, c=1e-4, kappa=0, steps=1000, lr=0.01):
+
+<FFGSM> --> test data와 유사
+def __init__(self, model, eps=8/255, alpha=10/255):
+
+<FGSM>  --> test data와 가장 유사
+def __init__(self, model, eps=0.007):
+
+<MIFGSM> --> test data와 유사
+def __init__(self, model, eps=8/255, steps=5, decay=1.0):
+
+<PGD>
+def __init__(self, model, eps=0.3, alpha=2/255, steps=40, random_start=False):
+
+<RFGSM>
+def __init__(self, model, eps=16/255, alpha=8/255, steps=1):
+
+<TPGD>
+def __init__(self, model, eps=8/255, alpha=2/255, steps=7):
+====================================================
+            # epss = [4, 10]
+            # alphas = [10]
+
+
+            # origin_data=data.cpu().numpy()
+            # im = origin_data[0, :, :, :]
+            #
+            # imsave(f"./confirm_attack2img/FFGSM_whole/before{i}.png", np.transpose(im, (1, 2, 0)))
+
+
+            # for eps in epss:
+            #     # atk = torchattacks.MIFGSM(model, eps=eps / 255, steps=4)
+            #     atk = torchattacks.FFGSM(model, eps=eps / 255, alpha=alphas[i % len(alphas)] / 255)
+            #     # atk = torchattacks.CW(model, c=eps*(np.e - 4), steps=10)
+            #     # atk = torchattacks.BIM(model, eps=eps / 255, alpha=alphas[i % len(alphas)] / 255, steps=4)
+            #     # atk = torchattacks.FGSM(model, eps=eps / 255)
+            #     data_atk = atk(data, (target + 1) % 2)
+
+
+================================================================================================================
+            # method_APGD, method_PGD = [20,70,2], [20,70,2]  #0,2
+            # method_FFGSM = [3,7,11,15,10] #1
+            # method_FFGSM_st = [30, 10] #3
+
+
+            for eps in range(3,-1,-1):
+                atk1 = torchattacks.FFGSM(model, eps=method_FFGSM[eps] / 255, alpha=method_FFGSM[-1] / 255)
+                data_atk1 = atk1(data, (target + 1) % 2)
+
+                data_atk1, target = data_atk1.to(device), target.to(device)
+                logits = model(data_atk1)
+                data_atk1 = data_atk1.cpu().numpy()
+
+                if eps <= 1:
+                    atk0 = torchattacks.APGD(model, eps=method_APGD[eps] / 255, alpha=method_APGD[-1] / 255, steps=4)
+                    atk2 = torchattacks.PGD(model, eps=method_PGD[eps] / 255, alpha=method_PGD[-1] / 255, steps=4)
+
+                    data_atk0 = atk0(data, (target + 1) % 2)
+                    data_atk0, target = data_atk0.to(device), target.to(device)
+                    logits = model(data_atk0)
+                    data_atk0 = data_atk0.cpu().numpy()
+
+                    data_atk2 = atk2(data, (target + 1) % 2)
+                    data_atk2, target = data_atk2.to(device), target.to(device)
+                    logits = model(data_atk2)
+                    data_atk2 = data_atk2.cpu().numpy()
+
+
+                if eps <= 0:
+                    atk3 = torchattacks.FFGSM(model, eps=method_FFGSM_st[eps] / 255, alpha=method_FFGSM_st[-1] / 255)
+
+                    data_atk3 = atk3(data, (target + 1) % 2)
+                    data_atk3, target = data_atk3.to(device), target.to(device)
+                    logits = model(data_atk3)
+                    data_atk3 = data_atk3.cpu().numpy()
+
+                bat_size = args.batch_size
+                for j in range(bat_size):
+
+                    im1 = data_atk1[j, :, :, :]
+                    imsave(
+                        f"./confirm_attack2img/AE-for-classification/whole_FFGSM/{target[j]}_{face_name[j]}_{i * bat_size + j}_eps{method_FFGSM[eps]}_FFGSM_wsys.png",
+                        np.transpose(im1, (1, 2, 0)))
+
+                    if eps <= 1:
+
+                        im0 = data_atk0[j, :, :, :]
+                        imsave(
+                            f"./confirm_attack2img/AE-for-classification/whole_APGD/{target[j]}_{face_name[j]}_{i * bat_size + j}_eps{method_APGD[eps]}_APGD_wsys.png",
+                            np.transpose(im0, (1, 2, 0)))
+
+                        im2 = data_atk2[j, :, :, :]
+                        imsave(
+                            f"./confirm_attack2img/AE-for-classification/whole_PGD/{target[j]}_{face_name[j]}_{i * bat_size + j}_eps{method_PGD[eps]}_PGD_wsys.png",
+                            np.transpose(im2, (1, 2, 0)))
+
+                    if eps <= 0:
+                        im3 = data_atk3[j, :, :, :]
+                        if (target[j] == 0):
+                            imsave(
+                                f"./confirm_attack2img/AE-for-classification/whole_FFGSM_st/{target[j]}_{face_name[j]}_{i * bat_size + j}_eps{method_FFGSM_st[eps]}_FFGSM_st_wsys.png",
+                                np.transpose(im3, (1, 2, 0)))

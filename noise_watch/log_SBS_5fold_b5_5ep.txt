@@ -1,0 +1,8 @@
+attack_strengths   :   0      auc   :   1.0
+attack_strengths   :   3      auc   :   1.0
+attack_strengths   :   5      auc   :   1.0
+attack_strengths   :   7      auc   :   1.0
+attack_strengths   :   9      auc   :   0.9999977980765759
+attack_strengths   :   11      auc   :   0.9999920730756731
+attack_strengths   :   13      auc   :   0.9999863480747703
+attack_strengths   :   17      auc   :   0.9997555864999195
